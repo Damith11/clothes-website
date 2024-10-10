@@ -1,0 +1,298 @@
+<section id="sidebar">
+        <a href="index.php" class="brand"><i class="fi fi-rs-admin-alt icon"></i>Admin Panel</a>
+        <ul class="side-menu">
+            <li><a href="index.php" class="active"><i class="fi fi-rs-home icon"></i> Dashboard</a></li>
+            <li class="divider" data-text="main">Main</li>
+            <li>
+                <a href="#"><i class="fi fi-rs-box-open-full icon"></i> Product <i class="bx bx-chevron-right icon-right"></i></a>
+                <ul class="side-dropdown">
+                    <li><a href="view_product.php">View Product</a></li>
+                    <li><a href="insert_product.php">Insert Product</a></li>
+                </ul>       
+            </li>
+
+            <li>
+                <a href="#"><i class='bx bxs-category-alt icon'></i> Categories <i class="fi fi-rs-angle-small-right icon-right"></i></a>
+                <ul class="side-dropdown">
+                    <li><a href="view_categories.php">View Categories</a></li>
+                    <li><a href="insert_categories.php">Insert Categories</a></li>
+                </ul>       
+            </li>
+
+            <li>
+                <a href=""><i class="fi fi-rs-brand icon"></i> Brands <i class="fi fi-rs-angle-small-right icon-right"></i></a>
+                <ul class="side-dropdown">
+                    <li><a href="view_brand.php">View Brands</a></li>
+                    <li><a href="insert_brand.php">Insert Brands</a></li>
+                </ul>       
+            </li>
+
+            <li class="divider" data-text="Active">Active</li>
+
+            <li>
+                <a href="all_order.php"><i class="fi fi-rs-cart-arrow-down icon"></i> All Orders </a>
+            </li>
+
+            <li>
+                <a href="all_payment.php"> <i class="fi fi-rs-wallet icon "></i> All Payment </a>
+            </li>
+
+            <li>
+                <a href="user_list.php"><i class="fi fi-rs-users-alt icon "></i> User List</a>
+            </li>    
+
+        </ul>
+    </section>
+
+
+
+
+    <?php 
+session_start();
+include('conf/config.php');
+include('conf/checklogin.php');
+check_login();
+$admin_id = $_SESSION['admin_id'];
+
+// Handle money transfer
+if (isset($_POST['deposit'])) {
+    $tr_code = $_POST['tr_code'];
+    $account_id = $_GET['account_id'];
+    $acc_name = $_POST['acc_name'];
+    $account_number = $_GET['account_number'];
+    $acc_type = $_POST['acc_type'];
+    $tr_type  = $_POST['tr_type'];
+    $tr_status = $_POST['tr_status'];
+    $client_id  = $_GET['client_id'];
+    $client_name  = $_POST['client_name'];
+    $client_national_id  = $_POST['client_national_id'];
+    $transaction_amt = $_POST['transaction_amt'];
+    $client_phone = $_POST['client_phone'];
+
+    // Few fields to hold funds transfers
+    $receiving_acc_no = $_POST['receiving_acc_no'];
+    $receiving_acc_name = $_POST['receiving_acc_name'];
+    $receiving_acc_holder = $_POST['receiving_acc_holder'];
+
+    // Notification details
+    $notification_details = "$client_name has transferred Rs $transaction_amt from Bank Account $account_number to Bank Account $receiving_acc_no";
+
+    // Calculate current balance including interest
+    $result = "SELECT 
+        SUM(CASE WHEN tr_type = 'Deposit' THEN transaction_amt ELSE 0 END) - 
+        SUM(CASE WHEN tr_type = 'Withdrawal' OR tr_type = 'Transfer' THEN transaction_amt ELSE 0 END) 
+        AS base_balance, acc_rates 
+        FROM iB_Transactions 
+        JOIN iB_bankAccounts ON iB_Transactions.account_id = iB_bankAccounts.account_id 
+        WHERE iB_Transactions.account_id=?";
+    $stmt = $mysqli->prepare($result);
+    $stmt->bind_param('i', $account_id);
+    $stmt->execute();
+    $stmt->bind_result($base_balance, $acc_rates);
+    $stmt->fetch();
+    $stmt->close();
+
+    // Calculate interest based on the balance
+    $banking_rate = $acc_rates / 100; // Convert percentage to decimal
+    $interest = $base_balance * $banking_rate;
+    $amt = $base_balance + $interest;
+
+    // Check if the transfer amount exceeds the account balance
+    if ($transaction_amt > $amt) {
+        $transaction_error = "You do not have sufficient funds in your account for the transfer. Your current account balance including interest is Rs $amt.";
+    } else {
+        // Insert transaction into iB_Transactions
+        $query = "INSERT INTO iB_Transactions (tr_code, account_id, acc_name, account_number, acc_type, tr_type, tr_status, client_id, client_name, client_national_id, transaction_amt, client_phone, receiving_acc_no, receiving_acc_name, receiving_acc_holder) 
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+        $notification = "INSERT INTO iB_notifications (notification_details) VALUES (?)";
+
+        $stmt = $mysqli->prepare($query);
+        $notification_stmt = $mysqli->prepare($notification);
+
+        // Bind parameters
+        $stmt->bind_param('sssssssssssssss', $tr_code, $account_id, $acc_name, $account_number, $acc_type, $tr_type, $tr_status, $client_id, $client_name, $client_national_id, $transaction_amt, $client_phone, $receiving_acc_no, $receiving_acc_name, $receiving_acc_holder);
+        $notification_stmt->bind_param('s', $notification_details);
+
+        $stmt->execute();
+        $notification_stmt->execute();
+
+        // Success or error handling
+        if ($stmt && $notification_stmt) {
+            $success = "Money transferred successfully!";
+        } else {
+            $err = "Please try again or try later.";
+        }
+    }
+}
+?>
+
+<!DOCTYPE html>
+<html>
+<?php include("dist/_partials/head.php"); ?>
+
+<body class="hold-transition sidebar-mini layout-fixed layout-navbar-fixed">
+    <div class="wrapper">
+        <!-- Navbar -->
+        <?php include("dist/_partials/nav.php"); ?>
+        <!-- Main Sidebar Container -->
+        <?php include("dist/_partials/sidebar.php"); ?>
+
+        <!-- Content Wrapper. Contains page content -->
+        <?php
+        $account_id = $_GET['account_id'];
+        $ret = "SELECT * FROM iB_bankAccounts WHERE account_id = ?";
+        $stmt = $mysqli->prepare($ret);
+        $stmt->bind_param('i', $account_id);
+        $stmt->execute();
+        $res = $stmt->get_result();
+        while ($row = $res->fetch_object()) {
+            // Fetch account balance including interest
+            $result = "SELECT 
+                SUM(CASE WHEN tr_type = 'Deposit' THEN transaction_amt ELSE 0 END) - 
+                SUM(CASE WHEN tr_type = 'Withdrawal' OR tr_type = 'Transfer' THEN transaction_amt ELSE 0 END) 
+                AS base_balance, acc_rates 
+                FROM iB_Transactions 
+                JOIN iB_bankAccounts ON iB_Transactions.account_id = iB_bankAccounts.account_id 
+                WHERE iB_Transactions.account_id=?";
+            $stmt = $mysqli->prepare($result);
+            $stmt->bind_param('i', $account_id);
+            $stmt->execute();
+            $stmt->bind_result($base_balance, $acc_rates);
+            $stmt->fetch();
+            $stmt->close();
+
+            // Calculate interest
+            $banking_rate = $acc_rates / 100; // Convert percentage to decimal
+            $interest = $base_balance * $banking_rate;
+            $amt = $base_balance + $interest;
+        ?>
+            <div class="content-wrapper">
+                <section class="content-header">
+                    <div class="container-fluid">
+                        <div class="row mb-2">
+                            <div class="col-sm-6">
+                                <h1>Transfer Money</h1>
+                            </div>
+                            <div class="col-sm-6">
+                                <ol class="breadcrumb float-sm-right">
+                                    <li class="breadcrumb-item"><a href="pages_dashboard.php">Dashboard</a></li>
+                                    <li class="breadcrumb-item"><a href="pages_transfer_money.php">Finances</a></li>
+                                    <li class="breadcrumb-item"><a href="pages_transfer_money.php">Transfer</a></li>
+                                    <li class="breadcrumb-item active"><?php echo $row->acc_name; ?></li>
+                                </ol>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <section class="content">
+                    <div class="container-fluid">
+                        <div class="row">
+                            <div class="col-md-12">
+                                <div class="card card-purple">
+                                    <div class="card-header">
+                                        <h3 class="card-title">Fill All Fields</h3>
+                                    </div>
+                                    <form method="post" enctype="multipart/form-data" role="form">
+                                        <div class="card-body">
+                                            <div class="row">
+                                                <div class="col-md-4 form-group">
+                                                    <label for="client_name">Client Name</label>
+                                                    <input type="text" readonly name="client_name" value="<?php echo $row->client_name; ?>" class="form-control" id="client_name">
+                                                </div>
+                                                <div class="col-md-4 form-group">
+                                                    <label for="client_national_id">Client National ID No.</label>
+                                                    <input type="text" readonly name="client_national_id" value="<?php echo $row->client_national_id; ?>" class="form-control" id="client_national_id">
+                                                </div>
+                                                <div class="col-md-4 form-group">
+                                                    <label for="client_phone">Client Phone Number</label>
+                                                    <input type="text" readonly name="client_phone" value="<?php echo $row->client_phone; ?>" class="form-control" id="client_phone">
+                                                </div>
+                                            </div>
+                                            <div class="row">
+                                                <div class="col-md-4 form-group">
+                                                    <label for="acc_name">Account Name</label>
+                                                    <input type="text" readonly name="acc_name" value="<?php echo $row->acc_name; ?>" class="form-control" id="acc_name">
+                                                </div>
+                                                <div class="col-md-4 form-group">
+                                                    <label for="account_number">Account Number</label>
+                                                    <input type="text" readonly name="account_number" value="<?php echo $row->account_number; ?>" class="form-control" id="account_number">
+                                                </div>
+                                                <div class="col-md-4 form-group">
+                                                    <label for="acc_type">Account Type | Category</label>
+                                                    <input type="text" readonly name="acc_type" value="<?php echo $row->acc_type; ?>" class="form-control" id="acc_type">
+                                                </div>
+                                            </div>
+                                            <div class="row">
+                                                <div class="col-md-4 form-group">
+                                                    <label for="tr_code">Transaction Code</label>
+                                                    <?php
+                                                    $length = 20;
+                                                    $_transcode = substr(str_shuffle('0123456789QWERgfdsazxcvbnTYUIOqwertyuioplkjhmPASDFGHJKLMNBVCXZ'), 1, $length);
+                                                    ?>
+                                                    <input type="text" name="tr_code" readonly value="<?php echo $_transcode; ?>" class="form-control" id="tr_code">
+                                                </div>
+                                                <div class="col-md-4 form-group">
+                                                    <label for="current_balance">Current Account Balance</label>
+                                                    <input type="text" readonly value="<?php echo number_format($amt, 2); ?>" class="form-control" id="current_balance">
+                                                </div>
+                                                <div class="col-md-4 form-group">
+                                                    <label for="transaction_amt">Amount Transfered (Rs)</label>
+                                                    <input type="text" name="transaction_amt" required class="form-control" id="transaction_amt">
+                                                </div>
+                                            </div>
+
+                                            <div class="row">
+                                                <div class="col-md-4 form-group">
+                                                    <label for="receiving_acc_no">Receiving Acc No.</label>
+                                                    <select name="receiving_acc_no" onChange="getiBankAccs(this.value);" required class="form-control">
+                                                        <option>Select Receiving Account</option>
+                                                        <?php
+                                                        //fetch all iB_Accs
+                                                        $ret = "SELECT * FROM  iB_bankAccounts ";
+                                                        $stmt = $mysqli->prepare($ret);
+                                                        $stmt->execute(); //ok
+                                                        $res = $stmt->get_result();
+                                                        $cnt = 1;
+                                                        while ($row = $res->fetch_object()) {
+
+                                                        ?>
+                                                            <option><?php echo $row->account_number; ?></option>
+
+                                                        <?php } ?>
+
+                                                    </select>
+                                                    
+                                                </div>
+
+                                                <div class="col-md-4 form-group">
+                                                    <label for="receiving_acc_name">Receiving Acc Name</label>
+                                                    <input type="text" name="receiving_acc_name" required class="form-control" id="receiving_acc_name">
+                                                </div>
+                                                <div class="col-md-4 form-group">
+                                                    <label for="receiving_acc_holder">Receiving Acc Holder</label>
+                                                    <input type="text" name="receiving_acc_holder" required class="form-control" id="receiving_acc_holder">
+                                                </div>
+
+                                                 
+                                
+                                            </div>
+                                        </div>
+
+
+
+                                        <div class="card-footer text-right">
+                                            <button type="submit" name="deposit" class="btn btn-success">Transfer Money</button>
+                                        </div>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+            </div>
+        <?php } ?>
+    </div>
+    <?php include("dist/_partials/footer.php"); ?>
+</body>
+</html>

@@ -1,0 +1,132 @@
+
+@import url('https://fonts.googleapis.com/css2?family=Roboto+Slab:wght@100..900&display=swap');
+
+*{
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: "Roboto Slab", serif;
+}
+
+.wrapper {
+    position: relative;
+    left: 350px;
+    width: calc(90% - 300px);
+    padding: 20px 30px;
+    margin: 20px;
+    border-radius: 10px;
+    box-shadow: 0 4px 8px 0 rgb(109, 109, 109);
+    
+}
+
+.wrapper .title {
+    text-align: center;
+    padding-bottom: 5px;
+}
+
+.wrapper .info {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    padding-top: 20px;
+}
+
+.input-box {
+    display: flex;
+    flex-wrap: wrap;
+    width: 50%;
+    padding-bottom: 14px;
+}
+
+.input-box:nth-child(2n) {
+    justify-content: end;
+}
+
+.input-box label {
+    width: 95%;
+    color: #000000;
+    font-size: 15px;
+    font-weight: 500;
+    margin-bottom: 5px;
+}
+
+
+.input-box input,select {
+    height: 40px;
+    width: 95%;
+    border-radius: 7px;
+    border: 1px solid rgb(35, 35, 35);
+    transition: 0.5s;
+    padding: 10px;
+}
+
+.input-box input,select:focus {
+    border: 2px solid #555;
+}
+
+.btn {
+    margin: 25px;
+    text-align: center;
+}
+
+.btn_add{
+   text-decoration: none;
+   font-size: 1.2em;
+   color: #fff;
+   background-color: #1775F1;
+   padding: 10px 15px;
+   margin: 20px;
+   border-radius: 7px;
+}
+
+.btn_add:hover {
+    color: #1775F1;
+    background-color: transparent;
+    border: 1px solid #1775f1;
+}
+
+.btn_Reset {
+   text-decoration: none;
+   font-size: 1.2em;
+   color: #fff;
+   background-color: #f1171b;
+   padding: 10px 15px;
+   margin: 20px;
+   border-radius: 7px;
+}
+
+.btn_Reset:hover {
+    color: #f1171b;
+    background-color: transparent;
+    border: 1px solid #f1171b;
+}
+
+
+@media (max-width:786px) {
+    .wrapper {
+        /* min-width: 280px; */
+        width: calc(100% - 60px);
+    }
+
+    .input-box {
+        margin-bottom: 10px;
+        width: 100%;
+    }
+
+    .input-box:nth-child(2n) {
+        justify-content: space-between;
+    }
+
+    .input-box input,select {
+        width: 100%;
+    }
+
+    .info {
+        max-height: 370px;
+        overflow: auto;
+    }
+    
+    .info::-webkit-scrollbar {
+        width: 0;
+    }
+}

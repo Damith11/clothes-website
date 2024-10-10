@@ -1,0 +1,87 @@
+<?php 
+              
+              function add_cart(){
+
+                global $con;
+                
+              
+                if(isset($_SESSION['user_email'])){
+                
+                if(isset($_POST['add_cart'])){
+
+
+                  $product_id=$_POST['product_id'];
+                  $product_title=$_POST['product_title'];
+                  $product_price=$_POST['new_price'];
+                  $product_image=$_POST['product_image'];
+                  $product_quntity=1;
+                  $user_email=$_SESSION['user_email'];
+                 
+                  
+                  
+
+                  // select cart data based on contition
+ 
+                    $select_product="SELECT * FROM `product`WHERE product_id=$product_id ";
+                    $result_query=mysqli_query($con,$select_product);
+                    $row=mysqli_fetch_assoc($result_query);
+                    $item_available=$row['item_available'];
+          
+                      $select_cart=mysqli_query($con,"SELECT * FROM `cart` WHERE name='$product_title' and user_email='$user_email'");
+
+                       if($item_available<=0 or mysqli_num_rows($select_cart)>0){
+                        echo "<script>alert('Item is not available')</script>";
+                        echo "<script>window.open('index.php','_self')</script>";
+                  
+                    }
+                    
+            // if(){
+            //     echo "<script>alert('product already added to cart')</script>";
+               
+            // }
+
+                      else{
+
+                      $insert_product=mysqli_query($con,"INSERT INTO `cart` (name,price,quantity,image,product_id,user_email) VALUES ('$product_title','$product_price',$product_quntity,'$product_image',$product_id,'$user_email')");
+                      
+                      // $select_query="SELECT * FROM `product` WHERE product_id=$product_id";
+                      // $result_query=mysqli_query($con,$select_query);
+                      // $row=mysqli_fetch_assoc($result_query);
+                      // $item_available=$row['item_available'];
+                      // $update_item=$item_available-1;
+
+                      // $update_items="UPDATE `product` SET item_available='$update_item' WHERE product_id=$product_id";
+                      // $result_query=mysqli_query($con,$update_items);
+
+             ?>
+                        <script>
+                         swal({
+                                title: "Good job!",
+                                text: "You clicked the button!",
+                                icon: "success",
+                              });
+                        </script>
+                        
+                  
+
+                      <?php
+                      
+                    }
+
+                  
+                
+                  }
+                }                
+
+              
+
+              else{
+                // echo "<script>alert('plese register frist')</script>";
+                // echo "<script>window.open('index.php','_self')</script>";
+
+              }
+                
+          
+            }
+                            
+              ?> 

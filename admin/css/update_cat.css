@@ -1,0 +1,237 @@
+@import url('https://fonts.googleapis.com/css2?family=Roboto+Slab:wght@100..900&display=swap');
+
+*{
+    font-family: "Roboto Slab", serif;
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+/* 
+.form-border {
+    position: relative;
+    width: calc(90% - 300px);
+    left: 350px;
+    margin-right: 0px;
+    border: 1px solid #ffffff;
+    border-radius: 15px;
+    background-color: #fff;
+    box-shadow: 0 4px 8px 0 rgb(109, 109, 109);
+    font-weight: 600;
+}
+
+
+
+.insert_product {
+    text-align: center;
+    margin: 25px;
+    /* background-color: #add7f6;
+    border-radius: 4px;
+    height: 50px; 
+}
+
+/* .form-list {
+    padding: 10px;
+    column-count: 2;  
+   
+}
+
+
+.form-outline {
+    padding: 12px;
+  
+}
+
+
+.form-control {
+    width: 100%;
+    margin: 8px 0;
+    padding: 12px 20px;
+    outline: none; 
+    border: 1px solid #00509d;
+    transition: all 0.3s ease;
+    border-radius: 4px;
+}
+
+.form-control:focus {
+    box-shadow: 0 0 0 1px #00509d;
+}
+
+.form-select{
+    width: 100%;
+    margin: 8px 0;
+    padding: 12px 20px;
+    border: 1px solid #00509d;
+    border-radius: 4px;
+}
+
+
+
+
+.btn-submit {
+    background-color: #ffffff;
+    color: #0a0000;
+    text-align: center;
+    font-size: 18px;
+    font-weight: 600;
+    margin: 15px 50px 30px 80px;
+    cursor: pointer;
+    padding: 14px 20px ;
+    width: 80%;
+    border-radius: 4px;
+    border: 1px solid #00509d;
+}
+
+.btn-submit:hover {
+    background-color: #0C5FCD;
+    color: #ffffff;
+    box-shadow: 0 12px 16px 0 rgba(0,0,0,0.24),0 17px 50px 0 rgba(0,0,0,0.19);
+} */
+
+
+
+.wrapper {
+    position: relative;
+    left: 350px;
+    width: calc(90% - 300px);
+    padding: 20px 30px;
+    margin: 20px;
+    border-radius: 10px;
+    background-color: #ffffff;
+    box-shadow: 0 4px 8px 0 rgb(109, 109, 109);
+    
+}
+
+.wrapper .title {
+    text-align: center;
+    padding-bottom: 5px;
+}
+
+.wrapper .info {
+    display: grid;
+    /* flex-wrap: wrap; */
+    padding-top: 20px;
+    margin: 20px 10px;
+    justify-items: center;
+}
+
+.input-box {
+    display: flex;
+    flex-wrap: wrap;
+    width: 50%;
+    padding-bottom: 14px;
+    justify-content: center;
+}
+
+/* .input-box:nth-child(2n) {
+    justify-content: end;
+} */
+
+.input-box label {
+    width: 95%;
+    color: #000000;
+    font-size: 15px;
+    font-weight: 500;
+    margin-bottom: 5px;
+}
+
+
+.input-box input,select {
+    height: 40px;
+    width: 95%;
+    border-radius: 7px;
+    border: 1px solid rgb(35, 35, 35);
+    transition: 0.5s;
+    padding: 10px;
+}
+
+.input-box input,select:focus {
+    border: 2px solid #555;
+}
+
+
+
+/* .btn input {
+    display: block;
+    width: 100%;
+    margin-top: 25px;
+    font-size: 18px;
+    padding: 8px;
+    border: none;
+    border-radius: 3px;
+    color: #fff;
+    background: #4070f4;
+    cursor: pointer;
+    transition: 0.3s;
+}
+
+.btn input:hover {
+    background: #5c81e4;
+} */
+
+.btn {
+    margin: 25px;
+    text-align: center;
+}
+
+.btn_add{
+   text-decoration: none;
+   font-size: 1.2em;
+   color: #fff;
+   background-color: #1775F1;
+   padding: 10px 15px;
+   margin: 20px;
+   border-radius: 7px;
+}
+
+.btn_add:hover {
+    color: #1775F1;
+    background-color: transparent;
+    border: 1px solid #1775f1;
+}
+
+.btn_Reset {
+   text-decoration: none;
+   font-size: 1.2em;
+   color: #fff;
+   background-color: #f1171b;
+   padding: 10px 15px;
+   margin: 20px;
+   border-radius: 7px;
+}
+
+.btn_Reset:hover {
+    color: #f1171b;
+    background-color: transparent;
+    border: 1px solid #f1171b;
+}
+
+
+@media (max-width:786px) {
+    .wrapper {
+        /* min-width: 280px; */
+        width: calc(100% - 60px);
+    }
+
+    .input-box {
+        margin-bottom: 10px;
+        width: 100%;
+    }
+
+    .input-box:nth-child(2n) {
+        justify-content: space-between;
+    }
+
+    .input-box input,select {
+        width: 100%;
+    }
+
+    .info {
+        max-height: 370px;
+        overflow: auto;
+    }
+    
+    .info::-webkit-scrollbar {
+        width: 0;
+    }
+}
